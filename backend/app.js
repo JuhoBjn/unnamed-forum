@@ -4,8 +4,8 @@ const app = express();
 
 app.use(express.json());
 
-app.get('/healtcheck', (req, res) => {
-  res.status(200).send('Pulsecheck OK');
+app.get('/healthcheck', (req, res) => {
+  res.status(200).send('Healthcheck OK');
 });
 
 module.exports = app;
