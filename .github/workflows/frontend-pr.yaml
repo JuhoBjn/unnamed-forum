@@ -1,0 +1,48 @@
+name: Frontend pull request check
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - .github/workflows/frontend-pr-yaml
+    workflow-dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.even.pull_request.head.ref }}
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21"
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+      - name: Lint the code
+        working-directory: ./frontend
+        run: npm run lint
+      - name: Check formatting
+        working-directory: ./frontend
+        run: npm run prettier:check
+      - name: Install DB
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          mysql version: "8.0"
+          mysql database: "test"
+          mysql root password: "pass"
+      # - name: Init DB
+      #   working-directory: ./backend
+      #   env:
+      #     TEST_DATABASE_URL: "mysql://root:pass@127.0.0.1:3306/test"
+      #   run: |
+      #     npx -y dbmate -e TEST_DATABASE_URL --no-dump-schema up
+      #     mysql -h 127.0.0.1 -u root -ppass < ./db/testdata/file.sql
+      - name: Run tests
+        working-directory: ./frontend
+        run: npm run test:run
