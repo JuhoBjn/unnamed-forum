@@ -1,0 +1,15 @@
+services:
+  db:
+    image: mysql:8.3.0
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: 'dev'
+      MYSQL_ROOT_PASSWORD: 'pass'
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8080:8080
+    restart: unless-stopped
