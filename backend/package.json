@@ -9,7 +9,9 @@
     "dev": "nodemon index.js",
     "lint": "eslint .",
     "prettier:check": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "migrate:up": "npx dbmate --url mysql://root:pass@127.0.0.1:3306/dev --wait up",
+    "migrate:down": "npx dbmate --url mysql://root:pass@127.0.0.1:3306/dev down"
   },
   "repository": {
     "type": "git",
