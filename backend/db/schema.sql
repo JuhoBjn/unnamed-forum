@@ -31,7 +31,7 @@ CREATE TABLE `users` (
   `id` varchar(36) NOT NULL,
   `username` varchar(100) NOT NULL,
   `email` varchar(320) NOT NULL,
-  `password` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `created` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
