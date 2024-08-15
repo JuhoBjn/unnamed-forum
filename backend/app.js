@@ -5,6 +5,7 @@ const app = express();
 app.use(express.json());
 
 app.get('/healthcheck', (req, res) => {
+  console.log(`[${new Date().toISOString()}] Healthcheck OK`);
   res.status(200).send('Healthcheck OK');
 });
 

@@ -49,6 +49,15 @@ const signup = async (req, res) => {
       throw new Error('User with this username already exists');
     }
   } catch (error) {
+    if (error.sqlMessage) {
+      console.error(`[${new Date().toISOString()}] ${error.sqlMessage}`);
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+    }
+    console.error(
+      `[${new Date().toISOString()}] Attempted signup with a username or email that is already in use`
+    );
     return res.status(StatusCodes.CONFLICT).send(error.message);
   }
 
@@ -87,6 +96,10 @@ const signup = async (req, res) => {
   const token = jwt.sign(tokenPayload, process.env.JWT_KEY, {
     expiresIn: '5d',
   });
+
+  console.log(
+    `[${new Date().toISOString()}] New user signed up, ${newUser.email}`
+  );
 
   return res
     .status(StatusCodes.OK)
