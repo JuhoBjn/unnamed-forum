@@ -106,4 +106,77 @@ const signup = async (req, res) => {
     .send({ username: newUser.username, email: newUser.email, token });
 };
 
-module.exports = { signup };
+/**
+ * Checks the provided user credentials and generates a Json Web Token for the
+ * user to authenticate with.
+ * @param {import('express').Request} req - Request context
+ * @param {import('express').Response} res - Response context
+ */
+const login = async (req, res) => {
+  const schema = joi.object({
+    username: joi.string().required(),
+    password: joi
+      .string()
+      .pattern(new RegExp('^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[0-9]).{8,}$'))
+      .required(),
+  });
+
+  const requestCredentials = {
+    username: req.body.username,
+    password: req.body.password,
+  };
+
+  const { error } = schema.validate(requestCredentials);
+  if (error) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .send({ error: error.details[0].message });
+  }
+
+  let dbUser = null;
+  try {
+    dbUser = await user.getByUsernameOrEmail(requestCredentials.username);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}]`, error);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+  }
+
+  try {
+    const passwordIsValid = await argon2.verify(
+      dbUser.password,
+      requestCredentials.password
+    );
+    if (passwordIsValid) {
+      const tokenPayload = {
+        id: dbUser.id,
+        username: dbUser.username,
+        email: dbUser.email,
+      };
+      const token = jwt.sign(tokenPayload, process.env.JWT_KEY, {
+        expiresIn: '5d',
+      });
+      console.log(
+        `[${new Date().toISOString()}] Successful login to user ${dbUser.email}`
+      );
+      return res
+        .status(StatusCodes.OK)
+        .send({ username: dbUser.username, email: dbUser.email, token });
+    } else {
+      console.warn(
+        `[${new Date().toISOString()}] Attempted login with invalid credentials to user ${dbUser.email}`
+      );
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send(ReasonPhrases.UNAUTHORIZED);
+    }
+  } catch (error) {
+    console.error('Error while logging in us>er:', error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send(ReasonPhrases.INTERNAL_SERVER_ERROR);
+  }
+};
+
+module.exports = { signup, login };

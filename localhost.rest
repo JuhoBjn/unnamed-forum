@@ -9,3 +9,12 @@ content-type: application/json
   "email": "thomas@test.com",
   "password": "Hunter20"
 }
+
+###
+POST http://localhost:5000/login
+content-type: application/json
+
+{
+  "username": "ThomasTest1",
+  "password": "Hunter20"
+}

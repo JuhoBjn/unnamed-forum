@@ -21,7 +21,9 @@ const user = {
       return rows[0] ?? null;
     } catch (error) {
       console.error('getUserByEmail:', error);
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
       throw error;
     }
   },
@@ -33,15 +35,41 @@ const user = {
    * @throws {Error} If the DB query fails
    */
   getByUsername: async (username) => {
-    const connection = await pool.getConnection();
+    let connection = null;
     try {
+      connection = await pool.getConnection();
       const query =
         'SELECT `id`,`username`,`email` FROM users WHERE `username` = ?;';
       const [rows] = await connection.query(query, [username]);
       return rows[0] ?? null;
     } catch (error) {
       console.error('getUserByUsername:', error);
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Gets a user's info by their username or email.
+   * @param {string} username - Username to query with
+   * @returns {Promise<(Object | null)>} A promise which resolves to a user if found, null if not found
+   * @throws {Error} If the DB query fails
+   */
+  getByUsernameOrEmail: async (username) => {
+    let connection = null;
+    try {
+      connection = await pool.getConnection();
+      const query =
+        'SELECT `id`, `username`, `email`, `password` FROM users WHERE `username` = ? OR `email` = ?;';
+      const [rows] = await connection.query(query, [username, username]);
+      return rows[0] ?? null;
+    } catch (error) {
+      console.error('get`ByUsernameOrEmail:', error);
+      if (connection) {
+        connection.release();
+      }
       throw error;
     }
   },
@@ -57,8 +85,9 @@ const user = {
    * @throws {Error} If the query fails
    */
   create: async (user) => {
-    const connection = await pool.getConnection();
+    let connection = null;
     try {
+      connection = await pool.getConnection();
       const query =
         'INSERT INTO users(id, username, email, password) VALUES (?);';
       const [rows] = await connection.query(query, [
@@ -68,7 +97,9 @@ const user = {
       return rows[0];
     } catch (error) {
       console.error('createUser:', error);
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
       throw error;
     }
   },
